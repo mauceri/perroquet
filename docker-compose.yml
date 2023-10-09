@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+  signald:
+    container_name: signald
+    image: signald/signald:0.23.2
+    restart: unless-stopped
+    volumes:
+      - ./signald:/signald
+
+  perroquet:
+    container_name: perroquet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - SIGNAL_PHONE_NUMBER
+    volumes:
+      - ./signald:/signald
+    depends_on:
+      - signald

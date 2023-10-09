@@ -1,0 +1,10 @@
+# flyctl launch added from .gitignore
+venv
+**/__pycache__
+.idea
+
+# flyctl launch added from models/.gitignore
+# Ignore everything in this directory
+models/**/*
+# Except this file
+!models/**/.gitignore

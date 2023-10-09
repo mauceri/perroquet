@@ -18,21 +18,23 @@
 """
 Signal Bot example, repeats received messages.
 """
+import requests
 import logging
 import os
 import signal
 import sys
 import anyio
-
 from semaphore import Bot, ChatContext
 
+url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
 
 async def echo(ctx: ChatContext) -> None:
     logging.info("ici")
     if not ctx.message.empty():
         await ctx.message.typing_started()
         logging.info("****** "+ctx.message.get_body())
-        await ctx.message.reply("***** "+ctx.message.get_body())
+        response = requests.post(f"{url}/question", json={"prompt": ctx.message.get_body()})
+        await ctx.message.reply("***** "+response.json()["choices"][0]["text"])
         await ctx.message.typing_stopped()
 
 

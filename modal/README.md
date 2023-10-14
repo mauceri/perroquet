@@ -1,6 +1,6 @@
 # Comment lancer une fonction sur modal
 
-Par exemple la configuration ayant un meilleur rapport est celle n'emplaoyant aucune accélération, pour la tester :
+Par exemple la configuration ayant un meilleur rapport est celle n'employant aucune accélération, pour la tester :
 
     modal serve llama_cpp_nu.py
 
@@ -8,11 +8,11 @@ Pour la déployer :
 
     modal deploy llama_cpp_nu.py
 
-Pour tester une GPU :
+Pour tester une GPU beaucoup plus chère :
 
     modal serve llama_cpp_docker_cuda.py
 
-qui utilise le fichier Docker : Dockerfile.cuda
+Ce fichier utilise le fichier Docker : Dockerfile.cuda
 
 Pour un déploiement : 
 

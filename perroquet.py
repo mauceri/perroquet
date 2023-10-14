@@ -29,12 +29,17 @@ from semaphore import Bot, ChatContext
 url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
 
 async def echo(ctx: ChatContext) -> None:
-    logging.info("ici")
     if not ctx.message.empty():
+        profile = await ctx.message.get_profile()
+        number = profile.address.number
+        name = profile.name
         await ctx.message.typing_started()
-        logging.info("****** "+ctx.message.get_body())
-        response = requests.post(f"{url}/question", json={"prompt": ctx.message.get_body()})
-        await ctx.message.reply("***** "+response.json()["choices"][0]["text"])
+        question = ctx.message.get_body()
+        logging.info(f"*******Question du {number} de {name} : {question}")
+        reponse = requests.post(f"{url}/question", json={"prompt": question})
+        reponse_texte = f"Réponse à la question {question} de {name} n° {number} :\n {reponse.json()['choices'][0]['text']}"
+        logging.info(f"*******La réponse est : {reponse_texte}")
+        await ctx.message.reply(reponse_texte)
         await ctx.message.typing_stopped()
 
 

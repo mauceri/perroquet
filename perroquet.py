@@ -23,10 +23,29 @@ import logging
 import os
 import signal
 import sys
+from collections import deque
 import anyio
 from semaphore import Bot, ChatContext
 
 url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
+
+class ChatHistory:
+    def __init__(self, msg_limit):
+        self.stack = deque(maxlen=msg_limit)
+
+    def append(self, msg):
+        return self.stack.append(msg)
+
+    def get_as_list(self):
+        return list(self.stack)
+
+    def get_as_string(self):
+        res = ""
+        for e in self.get_as_list():
+            res +=  e + "\n"
+        return res
+
+h = ChatHistory(5)
 
 async def echo(ctx: ChatContext) -> None:
     if not ctx.message.empty():
@@ -35,10 +54,14 @@ async def echo(ctx: ChatContext) -> None:
         name = profile.name
         await ctx.message.typing_started()
         question = ctx.message.get_body()
-        logging.info(f"*******Question du {number} de {name} : {question}")
-        reponse = requests.post(f"{url}/question", json={"prompt": question})
-        reponse_texte = f"Réponse à la question {question} de {name} n° {number} :\n {reponse.json()['choices'][0]['text']}"
-        logging.info(f"*******La réponse est : {reponse_texte}")
+        logging.info(f"*******Question du {number} de {name} : {question} historique : {h.get_as_string()}")
+        reponse = requests.post(f"{url}/question", json={"prompt":question,"context":h.get_as_string()})
+        print(f'Response: {reponse.json()["choices"][0]["text"]}')
+        r = reponse.json()["choices"][0]["text"]
+        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r}</v>\nhistorique: {h.get_as_string()}"
+        logging.info(f"******* {reponse_texte}")
+        h.append(f"<|Q|>: {question}")
+        h.append(f"<|A|>: {r}")
         await ctx.message.reply(reponse_texte)
         await ctx.message.typing_stopped()
 

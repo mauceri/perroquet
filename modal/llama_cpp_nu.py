@@ -71,49 +71,6 @@ def install_llama_cpp() :
     #llm = LlamaCpp(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
     llm = Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
     
-    print("************************ Attention ça va commencer *******************")
-    start = time.time()
-    tstart = start
-    
-    m = "Qui était Henri IV de France ?"
-    p = prompt.format(q=m)
-    output = llm(p)
-    print(output)
-    end = time.time()
-    print(end - start)
-    start = end
-
-    m = "Qui était le Dr Destouches ?"
-    p = prompt.format(q=m)
-    output = llm(p)
-    print(output)
-    end = time.time()
-    print(end - start)
-    start = end
-
-    m = "Comment a débuté la première guerre mondiale ?"
-    p = prompt.format(q=m)
-    output = llm(p)
-    print(output)
-    end = time.time()
-    print(end - start)
-    start = end
-
-    p = prompt.format(q="Comment se mangent les noix ?")
-    output = llm(p)
-    print(output)
-    end = time.time()
-    print(end - start)
-    start = end
-
-    p = prompt.format(q="Qu'est-ce que le sepuku ?")
-    output = llm(p)
-    print(output)
-    end = time.time()
-    print(end - start)
-    start = end
-    
-    print(end - tstart)
 
 @stub.local_entrypoint()
 def main():
@@ -125,22 +82,21 @@ class Model:
     def __enter__(self):
         self.prompt = """
             <|system|>: Vos réponses sont concises
+            {c}
             <|user|>: {q}
             """
 
-        self.llm =Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
+        self.llm =Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf",n_ctx=4096)
         # Load the model. Tip: MPT models may require `trust_remote_code=true`.
 
     @modal.method()
-    def generate(self, user_question):
-        p = self.prompt.format(q=user_question)
+    def generate(self, user_question, context=""):
+        p = self.prompt.format(q=user_question,c=context)
         
-        logging.info(user_question)
-        print(user_question)
+        logging.info(context+" "+user_question)
         result = self.llm(p)
         
         logging.info(result)
-        print(result)
         return result
 
 gmodel = Model()
@@ -150,6 +106,7 @@ web_app = FastAPI()
 
 class Item(BaseModel):
     prompt: str
+    context: str
 
 @web_app.get("/")
 async def handle_root(user_agent: str = Header(None)):
@@ -160,11 +117,16 @@ async def handle_root(user_agent: str = Header(None)):
 @web_app.post("/question")
 async def handle_question(item: Item, user_agent: str = Header(None)):
     logging.info(
-        f"POST /foo - received user_agent={user_agent}, item.prompt={item.prompt}"
+        f"POST /question - received user_agent={user_agent}, item.prompt={item.prompt}, item.context={item.context}"
     )
     print(item)
     logging.info(item)
-    answer = gmodel.generate.remote(item.prompt)
+    if item.context is not None:
+        # Logique si context est fourni
+        answer = gmodel.generate.remote(item.prompt, item.context)
+    else:
+        # Logique si context n'est pas fourni
+        answer = gmodel.generate.remote(item.prompt)
     return answer
 
 

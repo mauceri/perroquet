@@ -77,13 +77,23 @@ def main():
     install_llama_cpp.remote()
     
 
+ex = """
+<s>[INST] <<SYS>>
+Vous êtes Vigogne, un assistant IA créé par Zaion Lab. Vous suivez extrêmement bien les instructions. 
+Aidez autant que vous le pouvez.
+<</SYS>>
+Bonjour ! Comment ça va aujourd'hui ? [/INST] 
+Bonjour ! Je suis une IA, donc je n'ai pas de sentiments, mais je suis prêt à vous aider. Comment puis-je vous assister aujourd'hui ? </s>
+[INST] Quelle est la hauteur de la Tour Eiffel ? [/INST] 
+La Tour Eiffel mesure environ 330 mètres de hauteur. </s>
+[INST] Comment monter en haut ? [/INST]"""
 @stub.cls()
 class Model:
     def __enter__(self):
         self.prompt = """
-            <|system|>: Vos réponses sont concises
+            <s>[system]<<SYS>> Vos réponses sont concises<<SYS>>
             {c}
-            <|user|>: {q}
+            [INST]{q}[/INST]
             """
 
         self.llm =Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf",n_ctx=4096)
@@ -94,7 +104,7 @@ class Model:
         p = self.prompt.format(q=user_question,c=context)
         
         logging.info(context+" "+user_question)
-        result = self.llm(p)
+        result = self.llm.create_chat_completion(messages=[p],max_tokens=2048)
         
         logging.info(result)
         return result

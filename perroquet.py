@@ -60,8 +60,8 @@ async def echo(ctx: ChatContext) -> None:
         r = reponse.json()["choices"][0]["text"]
         reponse_texte = f"N° {number} :\nRéponse: \n<v>{r}</v>\nhistorique: {h.get_as_string()}"
         logging.info(f"******* {reponse_texte}")
-        h.append(f"<|Q|>: {question}")
-        h.append(f"<|A|>: {r}")
+        h.append(f"[[SYS]]{question}[[/SYS]]")
+        h.append(f"{r}</s>")
         await ctx.message.reply(reponse_texte)
         await ctx.message.typing_stopped()
 

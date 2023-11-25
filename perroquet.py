@@ -26,6 +26,9 @@ import sys
 from collections import deque
 import anyio
 from semaphore import Bot, ChatContext
+import uuid
+import datetime
+
 
 url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
 
@@ -54,11 +57,25 @@ async def echo(ctx: ChatContext) -> None:
         name = profile.name
         await ctx.message.typing_started()
         question = ctx.message.get_body()
-        logging.info(f"*******Question du {number} de {name} : {question} historique : {h.get_as_string()}")
-        reponse = requests.post(f"{url}/question", json={"prompt":question,"context":h.get_as_string()})
+
+
+        transaction = {
+            "transaction_id": str(uuid.uuid4()),
+            "timestamp_requête": datetime.datetime.now(),
+            "timestamp_réponse": None,
+            "question":question,
+            "réponse": None,
+            "contexte": "Nous sommes en phase de test"
+        }
+        logging.info(f"Question du {number} de {name} : {transaction['question']} historique : {transaction['contexte']}")
+
+        reponse = requests.post(f"{url}/question", json={transaction})
+
+
         print(f'Response: {reponse.json()["choices"][0]["text"]}')
         r = reponse.json()["choices"][0]["text"]
-        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r}</v>\nhistorique: {h.get_as_string()}"
+
+        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r['réponse']}</v>\nhistorique: {r['contexte']}"
         logging.info(f"******* {reponse_texte}")
         h.append(f"[[SYS]]{question}[[/SYS]]")
         h.append(f"{r}</s>")

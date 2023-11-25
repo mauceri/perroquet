@@ -1,5 +1,9 @@
 import os
 from fastapi import FastAPI, Header
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
 from llama_cpp import Llama
 import modal
 import shelve
@@ -114,9 +118,18 @@ gmodel = Model()
 
 web_app = FastAPI()
 
-class Item(BaseModel):
+"""class Item(BaseModel):
     prompt: str
-    context: str
+    context: str"""
+
+class TransactionType(BaseModel):
+    transaction_id: str
+    type: str
+    timestamp_requête: datetime
+    timestamp_réponse: Optional[datetime] = None
+    question: Optional[str] = None  # Si nécessaire
+    réponse: Optional[str] = None
+    contexte: Optional[str] = None  # Si nécessaire
 
 @web_app.get("/")
 async def handle_root(user_agent: str = Header(None)):
@@ -125,20 +138,31 @@ async def handle_root(user_agent: str = Header(None)):
 
 
 @web_app.post("/question")
-async def handle_question(item: Item, user_agent: str = Header(None)):
+async def handle_question(transaction: TransactionType):
     logging.info(
-        f"POST /question - received user_agent={user_agent}, item.prompt={item.prompt}, item.context={item.context}"
+        f"POST /question - received transaction.prompt={transaction.qestion}, transaction.context={transaction.context}"
     )
-    print(item)
-    logging.info(item)
-    if item.context is not None:
-        # Logique si context est fourni
-        answer = gmodel.generate.remote(item.prompt, item.context)
-    else:
-        # Logique si context n'est pas fourni
-        answer = gmodel.generate.remote(item.prompt)
-    return answer
+    # logging.info(item)
+    # if item.context is not None:
+    #     # Logique si context est fourni
+    #     answer = gmodel.generate.remote(item.prompt, item.context)
+    # else:
+    #     # Logique si context n'est pas fourni
+    #     answer = gmodel.generate.remote(item.prompt)
+    # return answer
 
+    # Générer la réponse
+    if transaction.context is not None:
+        answer = await gmodel.generate.remote(transaction.question, transaction.contexte)
+    else:
+        answer = await gmodel.generate.remote(transaction.question)
+
+    # Mettre à jour la transaction avec la réponse
+    transaction.réponse = answer
+    transaction.timestamp_réponse = datetime.now()
+
+    # Convertir l'objet Pydantic en dictionnaire pour le retourner
+    return transaction.dict()
 
 @stub.function(image=image)
 @modal.asgi_app()

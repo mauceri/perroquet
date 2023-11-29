@@ -28,27 +28,10 @@ import anyio
 from semaphore import Bot, ChatContext
 import uuid
 import datetime
-
+from pymongo import MongoClient
 
 url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
 
-class ChatHistory:
-    def __init__(self, msg_limit):
-        self.stack = deque(maxlen=msg_limit)
-
-    def append(self, msg):
-        return self.stack.append(msg)
-
-    def get_as_list(self):
-        return list(self.stack)
-
-    def get_as_string(self):
-        res = ""
-        for e in self.get_as_list():
-            res +=  e + "\n"
-        return res
-
-h = ChatHistory(5)
 
 async def echo(ctx: ChatContext) -> None:
     if not ctx.message.empty():
@@ -57,28 +40,30 @@ async def echo(ctx: ChatContext) -> None:
         name = profile.name
         await ctx.message.typing_started()
         question = ctx.message.get_body()
+        
+        ctx = f"[[SYS]]Qui était le petit Poucet[[/SYS]]"
+        ctx += f"[[SYS]]Un enfant perdu par ses parents[[/SYS]]"
+        # for transaction in lt:
+        #     ctx += f"[[SYS]]{transaction['question']}[[/SYS]]"
+        #     ctx += f"{transaction['réponse']}</s>"
 
-
-        transaction = {
-            "transaction_id": str(uuid.uuid4()),
-            "timestamp_requête": datetime.datetime.now(),
-            "timestamp_réponse": None,
-            "question":question,
-            "réponse": None,
-            "contexte": "Nous sommes en phase de test"
+        print(ctx)
+        item = {
+            "prompt":question,
+            "context": ctx
         }
-        logging.info(f"Question du {number} de {name} : {transaction['question']} historique : {transaction['contexte']}")
+        logging.info(f"Question du {number} de {name} : {item['question']} historique : {ctx}")
 
-        reponse = requests.post(f"{url}/question", json={transaction})
+        reponse = requests.post(f"{url}/question", json={item})
 
 
         print(f'Response: {reponse.json()["choices"][0]["text"]}')
         r = reponse.json()["choices"][0]["text"]
 
-        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r['réponse']}</v>\nhistorique: {r['contexte']}"
+        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r}</v>\nhistorique: {r['contexte']}"
         logging.info(f"******* {reponse_texte}")
-        h.append(f"[[SYS]]{question}[[/SYS]]")
-        h.append(f"{r}</s>")
+        #h.append(f"[[SYS]]{question}[[/SYS]]")
+        #h.append(f"{r}</s>")
         await ctx.message.reply(reponse_texte)
         await ctx.message.typing_stopped()
 

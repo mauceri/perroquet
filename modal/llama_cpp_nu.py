@@ -1,12 +1,14 @@
+import json
 import os
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
+import re
 
 from llama_cpp import Llama
+
 import modal
-import shelve
 import logging
 import subprocess
 
@@ -16,16 +18,26 @@ MODEL_DIR = "/root/models"
 
 def download_model_to_folder():
     os.makedirs(MODEL_DIR, exist_ok=True)
-
+    print(f"Loading model")
+    # subprocess.run(['huggingface-cli',
+    #                 'download',
+    #                 'TheBloke/Vigogne-2-7B-Chat-GGUF',
+    #                 'vigogne-2-7b-chat.Q5_K_M.gguf', 
+    #                 '--local-dir',
+    #                 MODEL_DIR,
+    #                 '--local-dir-use-symlinks',
+    #                 'False'])
     subprocess.run(['huggingface-cli',
                     'download',
-                    'TheBloke/Vigogne-2-7B-Chat-GGUF',
-                    'vigogne-2-7b-chat.Q5_K_M.gguf', 
+                    'TheBloke/Vigostral-7B-Chat-GGUF',
+                    'vigostral-7b-chat.Q5_K_M.gguf', 
                     '--local-dir',
                     MODEL_DIR,
                     '--local-dir-use-symlinks',
                     'False'])
   
+  
+
     logging.info(os.listdir("/root/models/"))
 
 
@@ -38,8 +50,8 @@ image = (
     .pip_install("torch")
     .pip_install("huggingface")
     .pip_install("huggingface_hub")
-    .run_function(download_model_to_folder,secret=modal.Secret.from_name("llama-cpp-hf"))
     .run_commands("pip install llama-cpp-python --force-reinstall --upgrade --no-cache-dir")
+    .run_function(download_model_to_folder,secret=modal.Secret.from_name("llama-cpp-hf"))
     .pip_install("langchain")
 )
 
@@ -72,8 +84,11 @@ def install_llama_cpp() :
     <|system|>: Vos réponses sont concises
     <|user|>: {q}
     """
+    # TheBloke/Vigogne-2-7B-Chat-GGUF
+
     #llm = LlamaCpp(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
-    llm = Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
+    #llm = Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf")
+    #llm = Llama(model_path="/root/models/vigostral-7b-chat.Q5_K_M.gguf")
     
 
 @stub.local_entrypoint()
@@ -95,41 +110,60 @@ La Tour Eiffel mesure environ 330 mètres de hauteur. </s>
 class Model:
     def __enter__(self):
         self.prompt = """
-            <s>[system]<<SYS>> Vos réponses sont concises<<SYS>>
-            {c}
-            [INST]{q}[/INST]
-            """
+             <s>[system]<<SYS>> Vos réponses sont concises<<SYS>>
+             {c}
+             [INST]{q}[/INST]
+             """
+        #self.prompt = """
+        #    <s>[system]<<SYS>> Vos réponses sont concises<<SYS>>
+        #    [INST]{q}[/INST]
+        #    """
 
-        self.llm =Llama(model_path="/root/models/vigogne-2-7b-chat.Q5_K_M.gguf",n_ctx=4096)
+        self.instructions = [{"role":"system","content":"Vos réponses sont concises"}]
+
+        self.llm =Llama(model_path="/root/models/vigostral-7b-chat.Q5_K_M.gguf",n_ctx=4096)
+        
         # Load the model. Tip: MPT models may require `trust_remote_code=true`.
 
     @modal.method()
-    def generate(self, user_question, context=""):
-        p = self.prompt.format(q=user_question,c=context)
-        
-        logging.info(context+" "+user_question)
-        result = self.llm.create_chat_completion(messages=[p],max_tokens=2048)
-        
-        logging.info(result)
-        return result
-
+    def generate(self, question):
+            
+        for i in range(10):
+            print(f"Essai n° {i}")
+            self.llm.reset()
+            prompt_tokens: List[int] = (
+                self.llm.tokenize(question.encode("utf-8"))
+                    if question != "" else [self.token_bos()]
+            )
+            print(f"Voici le prompt: \"{question}\" sa longueur est de {len(prompt_tokens)} tokens")
+            result = self.llm.create_completion(
+                prompt=question,max_tokens=1024,
+            )
+            print(f"retour{result}")
+            #retour{'id': 'cmpl-7aae2a66-7da8-4e65-b5a9-c6d859a179b8', 
+            #       'object': 'text_completion', 
+            #       'created': 1701878289, 
+            #       'model': '/root/models/vigostral-7b-chat.Q5_K_M.gguf', 
+            #       'choices': [{'text': ' Henri IV est un roi de France. Il a régné du 1', 
+            #                        'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 
+            #        'usage': {'prompt_tokens': 218, 'completion_tokens': 16, 'total_tokens': 234}}
+            
+           
+            if result["choices"][0]["text"].strip() != "":
+                print(f"Voici le résultat {result}")
+                return result
+           
+        raise Exception("No reply")
+ 
 gmodel = Model()
 
 
 web_app = FastAPI()
 
-"""class Item(BaseModel):
-    prompt: str
-    context: str"""
+class Item(BaseModel):
+    question: str
 
-class TransactionType(BaseModel):
-    transaction_id: str
-    type: str
-    timestamp_requête: datetime
-    timestamp_réponse: Optional[datetime] = None
-    question: Optional[str] = None  # Si nécessaire
-    réponse: Optional[str] = None
-    contexte: Optional[str] = None  # Si nécessaire
+
 
 @web_app.get("/")
 async def handle_root(user_agent: str = Header(None)):
@@ -138,31 +172,18 @@ async def handle_root(user_agent: str = Header(None)):
 
 
 @web_app.post("/question")
-async def handle_question(transaction: TransactionType):
-    logging.info(
-        f"POST /question - received transaction.prompt={transaction.qestion}, transaction.context={transaction.context}"
-    )
-    # logging.info(item)
-    # if item.context is not None:
-    #     # Logique si context est fourni
-    #     answer = gmodel.generate.remote(item.prompt, item.context)
-    # else:
-    #     # Logique si context n'est pas fourni
-    #     answer = gmodel.generate.remote(item.prompt)
-    # return answer
+async def handle_question(item:Item):
+    answer = None  
+    try:
+        print(f"****************************************** Question {item.question}")
+        # Logique si context n'est pas fourni
+        answer = gmodel.generate.remote(item.question)
+    except:
+        raise Exception("Quelque chose n'a pas fonctionné") 
+    print(f"****************************************** Réponse : {answer}")
+    return answer
 
-    # Générer la réponse
-    if transaction.context is not None:
-        answer = await gmodel.generate.remote(transaction.question, transaction.contexte)
-    else:
-        answer = await gmodel.generate.remote(transaction.question)
 
-    # Mettre à jour la transaction avec la réponse
-    transaction.réponse = answer
-    transaction.timestamp_réponse = datetime.now()
-
-    # Convertir l'objet Pydantic en dictionnaire pour le retourner
-    return transaction.dict()
 
 @stub.function(image=image)
 @modal.asgi_app()

@@ -18,5 +18,8 @@ services:
       - SIGNAL_PHONE_NUMBER
     volumes:
       - ./signald:/signald
+      - ./amicusdb:/amicusdb
     depends_on:
       - signald
+volumes:
+  dbdata: {}

@@ -18,52 +18,42 @@
 """
 Signal Bot example, repeats received messages.
 """
+import json
 import requests
 import logging
 import os
-import signal
-import sys
-from collections import deque
 import anyio
 from semaphore import Bot, ChatContext
-import uuid
-import datetime
-from pymongo import MongoClient
+from interrogation_Vigogne import InterrogationVigogne
+
+from sqlite_handler import SQLiteHandler
 
 url = "https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run"
-
+iv = InterrogationVigogne(db_path='/amicusdb/amicus.sqlite',url=url)
 
 async def echo(ctx: ChatContext) -> None:
     if not ctx.message.empty():
         profile = await ctx.message.get_profile()
-        number = profile.address.number
+        numero = profile.address.number
         name = profile.name
         await ctx.message.typing_started()
         question = ctx.message.get_body()
-        
-        ctx = f"[[SYS]]Qui était le petit Poucet[[/SYS]]"
-        ctx += f"[[SYS]]Un enfant perdu par ses parents[[/SYS]]"
-        # for transaction in lt:
-        #     ctx += f"[[SYS]]{transaction['question']}[[/SYS]]"
-        #     ctx += f"{transaction['réponse']}</s>"
-
-        print(ctx)
-        item = {
-            "prompt":question,
-            "context": ctx
-        }
-        logging.info(f"Question du {number} de {name} : {item['question']} historique : {ctx}")
-
-        reponse = requests.post(f"{url}/question", json={item})
-
-
-        print(f'Response: {reponse.json()["choices"][0]["text"]}')
-        r = reponse.json()["choices"][0]["text"]
-
-        reponse_texte = f"N° {number} :\nRéponse: \n<v>{r}</v>\nhistorique: {r['contexte']}"
+        logging.info(f"La question posée est : \"{question}\"")    
+        transaction_id = iv.sqliteh.ajout_question(numero,question).lastrowid
+        reponse_texte = ""
+        try:
+            reponse = iv.interroge_vigogne(question);
+            logging.info(f"Réponse de Vigogne \"{reponse}\"")
+            r = reponse.json()["choices"][0]["text"]
+            logging.info(f"Voici la réponse: {r}")
+            iv.sqliteh.modification_reponse(numero, transaction_id,r)
+            reponse_texte = f"N° {numero} :\nRéponse: \n<v>{r}</v>"
+        except BaseException as e:
+            print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Vigogne {e}")
+            iv.sqliteh.remove_transaction(transaction_id)
+            reponse_texte = f"N° {numero} :\nRéponse: \n<v>Erreur : Quelque chose n'a pas fonctionné</v>"
+        logging.info(f"L'id de la transaction pour la question {question} est {transaction_id}")
         logging.info(f"******* {reponse_texte}")
-        #h.append(f"[[SYS]]{question}[[/SYS]]")
-        #h.append(f"{r}</s>")
         await ctx.message.reply(reponse_texte)
         await ctx.message.typing_stopped()
 

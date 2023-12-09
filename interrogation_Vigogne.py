@@ -36,7 +36,7 @@ class InterrogationVigogne:
 
 
     def construction_contexte_initial(self,numero:str="+33659745825") :
-        self.sqliteh.remove_transaction(numero)
+        self.sqliteh.remove_all_transactions()
         transaction_id = self.sqliteh.ajout_question(numero,"Qui était Louis XIV de France").lastrowid
         #print(f"L'id de la transaction pour la question Qui était Louis XIV de France est {transaction_id}")
         self.sqliteh.modification_reponse(numero, transaction_id,"Un roi de France")

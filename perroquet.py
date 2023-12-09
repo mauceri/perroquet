@@ -42,7 +42,7 @@ async def echo(ctx: ChatContext) -> None:
         transaction_id = iv.sqliteh.ajout_question(numero,question).lastrowid
         reponse_texte = ""
         try:
-            reponse = iv.interroge_vigogne(question);
+            reponse = iv.interroge_vigogne(numero,question);
             logging.info(f"Réponse de Vigogne \"{reponse}\"")
             r = reponse.json()["choices"][0]["text"]
             logging.info(f"Voici la réponse: {r}")

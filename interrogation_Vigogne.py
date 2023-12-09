@@ -69,12 +69,12 @@ class InterrogationVigogne:
         #print(f"Question formatée {question_formatée}")
         return question_formatée
 
-    def interroge_vigogne(self,question):
+    def interroge_vigogne(self,numero,question):
         print(f"Interroge Vigogne {question}")
         logging.info(f"Interroge Vigogne {question}")
         qf = ""
         try:
-            qf = self.historique_et_question_formatés()
+            qf = self.historique_et_question_formatés(numero)
         except BaseException as e:
             print(f"Échec construction question{e}")
             logging.info(f"Échec construction question{e}")

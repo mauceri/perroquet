@@ -1,0 +1,29 @@
+.
+├── Dockerfile
+├── README.md
+├── __pycache__
+│   ├── interrogationMixtralAnyscale.cpython-311.pyc
+│   └── sqlite_handler.cpython-311.pyc
+├── amicus.py
+├── amicus.sqlite
+├── amicusdb
+│   └── amicus.sqlite
+├── check_signald.py
+├── docker-compose.yml
+├── interrogationMixtralAnyscale.py
+├── question_immigration.txt
+├── questions.txt
+├── signald
+│   ├── avatars
+│   │   └── contact-+33659745825
+│   ├── data
+│   ├── signald.db
+│   └── signald.sock
+├── sqlite_handler.py
+├── test_contexte.sqlite
+├── test_contexte_mixtral.py
+├── test_replicate.py
+├── test_sqlite_handler.py
+└── tree.txt
+
+6 directories, 21 files

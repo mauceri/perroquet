@@ -13,7 +13,7 @@
 +33659745800 Où est-il enterré ?
 +33686492883 Où est-il enterré ?
 +33659745800 Qui était son prédecesseur ?
---aide: Patati et patata
---profil: Je suis un bébé éléphant égaré...
---maj_profil: faites vos jeux
-Ben quoi, moi aussi je veux jouer
++33659745800 --aide: Patati et patata
++33686492883 --profil: Je suis un bébé éléphant égaré...
++33659745800 --maj_profil: faites vos jeux
++33686492883 Ben quoi, moi aussi je veux jouer

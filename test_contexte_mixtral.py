@@ -6,7 +6,7 @@ import requests
 import sys
 import json
 from datetime import datetime
-from interrogation_Vigogne import InterrogationVigogne
+from interrogation_Mixtral import InterrogationMixtral
 from sqlite_handler import SQLiteHandler
 from transformers import AutoTokenizer
 
@@ -15,7 +15,7 @@ class InterpreteurDeMessage:
     def __init__(self,db_path:str='test_contexte.sqlite'):
         self.commandes = ["--aide:","--profil:","--maj_profil:"]
         self.sqliteh = SQLiteHandler(db_path=db_path)
-        self.iv = InterrogationVigogne(db_path=db_path)
+        self.iv = InterrogationMixtral(db_path=db_path)
 
     def commande(self,commande,arguments):
         onsexcuze = f'''La commande {commande} {arguments} devrait êre disponible incessament sous peu et peut-être même avant'''
@@ -54,24 +54,24 @@ class InterpreteurDeMessage:
         elif self.est_ce_une_commandeq(quoi) and not premier: 
             self.commande(quoi, reste)
         elif not premier and not numero == "":
-            self.pour_Vigogne(numero,quoi+" "+reste)           
+            self.pour_Mixtral(numero,quoi+" "+reste)           
         else:
             print(f"Erreur js ne sais pas quoi faire de {message} et {numero}")
 
-    def pour_Vigogne(self,numero:str,question:str):
+    def pour_Mixtral(self,numero:str,question:str):
         print(f"Question du {numero}: {question}")
         transaction_id = self.iv.sqliteh.ajout_question(numero,question).lastrowid
         print(f"L'id de la transaction pour la question {question} est {transaction_id}")
             
         try:
-            reponse = self.iv.interroge_vigogne(numero,question);
-            print(f"Réponse de Vigogne \"{reponse}\"")
+            reponse = self.iv.interroge_mixtral(numero,question);
+            print(f"Réponse de Mixtral \"{reponse}\"")
             r = "rien"
-            r = reponse.json()["choices"][0]["text"]
+            r = reponse.json()["choices"][0]["message"]["content"]
             print(f"Voici la réponse: {r}")
             self.iv.sqliteh.modification_reponse(numero, transaction_id,r)
         except BaseException as e:
-            print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Vigogne {e}")
+            print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")
             self.iv.sqliteh.remove_transaction(transaction_id)
             reponse = None
 

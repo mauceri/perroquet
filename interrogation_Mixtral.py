@@ -12,14 +12,14 @@ from transformers import AutoTokenizer
 
 
 
-class InterrogationVigogne:
+class InterrogationMixtral:
     def __init__(self,
                  db_path:str='interrogation_vigogne.sqlite',
                  profondeur_historique:int=3,
-                 url:str="https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run",
-                 #url:str="https://mauceri--mixtral-llama-cpp-nu-fastapi-app.modal.run",
+                 #url:str="https://mauceri--llama-cpp-python-nu-fastapi-app.modal.run",
+                 url:str="https://mauceri--mixtral-llama-cpp-nu-fastapi-app.modal.run",
                  instructions_initiales:Dict[str,str]={"role":"system",
-                                                       "content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 50 mots, mais restent informatives."},
+                                                       "content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
                  tokenizer = AutoTokenizer.from_pretrained("bofenghuang/vigostral-7b-chat")                                    
                 ):
         #self.numero = "+33659745825"
@@ -61,17 +61,18 @@ class InterrogationVigogne:
         #contexte.append({"role":"user","content":question})
         #print(f"Question avant formatage {contexte}")
         #logging.info(f"Question avant formatage {contexte}")
-        try:
-            question_formatée = self.tokenizer.apply_chat_template(contexte, tokenize=False, add_generation_prompt=True,use_fast=False)
-        except BaseException as e:
-            print(f"Quelque chose n'a pas fonctionné au niveau du tokenizer{e}")
-            logging.info(f"Quelque chose n'a pas fonctionné au niveau du tokenizer{e}")
-            return f"Quelque chose n'a pas fonctionné {e}"
-        print(f"Question formatée {question_formatée}")
-        return question_formatée
+        # try:
+        #     question_formatée = self.tokenizer.apply_chat_template(contexte, tokenize=False, add_generation_prompt=True,use_fast=False)
+        # except BaseException as e:
+        #     print(f"Quelque chose n'a pas fonctionné au niveau du tokenizer{e}")
+        #     logging.info(f"Quelque chose n'a pas fonctionné au niveau du tokenizer{e}")
+        #     return f"Quelque chose n'a pas fonctionné {e}"
+        print(f"Question formatée {json.dumps(contexte)}")
+        return json.dumps(contexte)
+            
 
-    def interroge_vigogne(self,numero,question):
-        print(f"Interroge Vigogne {question}")
+    def interroge_mixtral(self,numero,question):
+        print(f"Interroge Mixtral {question}")
         logging.info(f"Interroge Vigogne {question}")
         qf = ""
         try:
@@ -81,12 +82,14 @@ class InterrogationVigogne:
             logging.info(f"Échec construction question{e}")
             return None
         item = {"question":qf}
-        print(f"Interrogation de Vigogne |{item}|")
+        print(f"Interrogation de Mixtral |{item}|")
         logging.info(f"Interrogation de Mixtral |{item}|")
+        
         try:
+            reponse = "rien"
             reponse = requests.post(f"{self.url}/question", json=item)
             return reponse;
         except BaseException as e:
-            print(f"Echec interrogation Vigogne {e}")
+            print(f"Echec interrogation Mixtral {e}")
         return None
 

@@ -48,10 +48,10 @@ class TestSQLiteHandler(unittest.TestCase):
     def test_ajout_question(self):
         #print("test_creation_question") 
         self.handler.creation_historique()
-        self.handler.ajout_question('123456789', 'Test question')
+        self.handler.ajout_question('kiki', 'carambar', 'Test question')
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM transactions WHERE telephone=?', ('123456789',))
+            cursor.execute('SELECT * FROM transactions WHERE utilisateur=? AND salon = ?', ('kiki', 'carambar',))
             self.assertIsNotNone(cursor.fetchone(), "La question n'a pas été ajoutée.")
             cursor.close()
 
@@ -73,8 +73,8 @@ class TestSQLiteHandler(unittest.TestCase):
     def test_modification_reponse(self):
         #print("test_modification_reponse") 
         self.handler.creation_historique()
-        transaction_id = self.handler.ajout_question('123456789', 'Test question').lastrowid
-        self.handler.modification_reponse('123456789', transaction_id, 'Test réponse')
+        transaction_id = self.handler.ajout_question('kiki', 'carambar', 'Test question').lastrowid
+        self.handler.modification_reponse('kiki', 'carambar', transaction_id, 'Test réponse')
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()   
             cursor.execute('SELECT reponse FROM transactions WHERE transaction_id=?', (transaction_id,))
@@ -84,36 +84,37 @@ class TestSQLiteHandler(unittest.TestCase):
     def test_modification_contexte(self):
         #print("test_modification_contexte") 
         self.handler.creation_contexte()
-        self.handler.modification_contexte('123456789', {'key': 'value'})
+        self.handler.modification_contexte('kiki', {'key': 'value'})
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT contexte FROM contexte WHERE telephone=?', ('123456789',))
+            cursor.execute('SELECT contexte FROM contexte WHERE utilisateur=?', ('kiki',))
             contexte = cursor.fetchone()[0]
             self.assertEqual(contexte, '{"key": "value"}', "Le contexte n'a pas été modifié correctement.")
             cursor.close()
 
     def test_history(self):
-        numero = "+33659745825"
-        self.handler.ajout_question(numero, 'Qui était Henri IV de France')
-        tid = self.handler.ajout_question(numero,"Qui était Henri IV de France").lastrowid
-        self.handler.modification_reponse(numero, tid, "Un roi de France")
-        tid = self.handler.ajout_question(numero,"Qui était Louis XIV ?").lastrowid
-        self.handler.modification_reponse(numero, tid, "Le Roi Soleil")
-        tid = self.handler.ajout_question(numero,"Qui était Louis XVI ?").lastrowid
-        self.handler.modification_reponse(numero, tid, "Un roi de France décapité sur la place de la Révolution")
-        tid = self.handler.ajout_question(numero,"Arthur Rimbaud").lastrowid
-        self.handler.modification_reponse(numero, tid, "Un poète de France")
-        tid = self.handler.ajout_question(numero,"Qui Paul Verlaine").lastrowid
-        self.handler.modification_reponse(numero, tid, "Un autre poète de France")
-        tid = self.handler.ajout_question(numero,"Qui était Jeanne d'Arc ?").lastrowid
-        self.handler.modification_reponse(numero, tid, "Une jeune file qui a sauvé la France et fut brûlée vive le 30 mai 1431")
-        tid = self.handler.ajout_question(numero,"Qui était Charles de Gaule").lastrowid
-        self.handler.modification_reponse(numero, tid, "Un sauveur de la France")
+        utilisateur = 'kiki' 
+        salon = 'carambar'
+        self.handler.ajout_question(utilisateur, salon, 'Qui était Henri IV de France')
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Henri IV de France").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Un roi de France")
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Louis XIV ?").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Le Roi Soleil")
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Louis XVI ?").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Un roi de France décapité sur la place de la Révolution")
+        tid = self.handler.ajout_question(utilisateur, salon,"Arthur Rimbaud").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Un poète de France")
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Paul Verlaine ?").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Un autre poète de France")
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Jeanne d'Arc ?").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Une jeune file qui a sauvé la France et fut brûlée vive le 30 mai 1431")
+        tid = self.handler.ajout_question(utilisateur, salon,"Qui était Charles de Gaule").lastrowid
+        self.handler.modification_reponse(utilisateur, salon, tid, "Un sauveur de la France")
 
-        h = self.handler.historique(numero,4)
+        h = self.handler.historique(utilisateur, salon,4)
         self.assertEqual(len(h), 4, "Il devrait valoir 4")
-        self.assertEqual(h[3]['reponse'],"Un poète de France")
-        self.assertEqual(h[1]['question'],"Qui était Jeanne d'Arc ?")
+        self.assertEqual(h[3]['reponse'],"Un sauveur de la France")
+        self.assertEqual(h[1]['question'],"Qui était Paul Verlaine ?")
         historique = []
         for transaction in h:
             historique.append({"role":"user","content":transaction['question']})

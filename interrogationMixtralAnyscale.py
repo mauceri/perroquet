@@ -17,7 +17,7 @@ class InterrogationMixtral:
                                                        "content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
                  
                 ):
-        #self.numero = "+33659745825"
+       
         self.load_env_variables('.localenv')
         #load_dotenv('.localenv')
         self.db_path = db_path
@@ -43,22 +43,22 @@ class InterrogationMixtral:
                     key, value = line.strip().split('=', 1)
                     os.environ[key] = value
 
-    def construction_contexte_initial(self,numero:str="+33659745825") :
+    def construction_contexte_initial(self,utilisateur:str="kiki", salon:str="caramba") :
         self.sqliteh.remove_all_transactions()
-        transaction_id = self.sqliteh.ajout_question(numero,"Qui était Louis XIV de France").lastrowid
+        transaction_id = self.sqliteh.ajout_question(utilisateur, salon,"Qui était Louis XIV de France").lastrowid
         #print(f"L'id de la transaction pour la question Qui était Louis XIV de France est {transaction_id}")
-        self.sqliteh.modification_reponse(numero, transaction_id,"Un roi de France")
+        self.sqliteh.modification_reponse(utilisateur, salon, transaction_id,"Un roi de France")
         
-        transaction_id = self.sqliteh.ajout_question(numero,"Qui était Charles Baudelaire").lastrowid
+        transaction_id = self.sqliteh.ajout_question(utilisateur, salon,"Qui était Charles Baudelaire").lastrowid
         #print(f"L'id de la transaction pour la question Qui était Charles Baudelaire est {transaction_id}")
-        self.sqliteh.modification_reponse(numero, transaction_id,"Un poète Français")
-        #for transaction in self.sqliteh.historique(numero,self.profondeur_historique):
+        self.sqliteh.modification_reponse(utilisateur, salon, transaction_id,"Un poète Français")
+        #for transaction in self.sqliteh.historique(utilisateur, salon,self.profondeur_historique):
         #    print(f"*************transaction {transaction}")
 
  
-    def historique_et_question_formatés(self,numero:str="+33659745825"):
+    def historique_et_question_formatés(self,utilisateur:str="kiki", salon:str="caramba"):
         contexte = [self.instructions_initiales]
-        h = self.sqliteh.historique(numero,self.profondeur_historique)
+        h = self.sqliteh.historique(utilisateur, salon,self.profondeur_historique)
         #print(f"Historique: {h}")
         for transaction in h:
             #print(f"transaction {transaction}")
@@ -70,12 +70,12 @@ class InterrogationMixtral:
         return contexte
             
 
-    def interroge_mixtral(self,numero,question):
+    def interroge_mixtral(self,utilisateur, salon,question):
         print(f"Interroge Mixtral {question}")
         logging.info(f"Interroge Mixtral {question}")
         qf = ""
         try:
-            qf = self.historique_et_question_formatés(numero)
+            qf = self.historique_et_question_formatés(utilisateur, salon)
         except BaseException as e:
             print(f"Échec construction question{e}")
             logging.info(f"Échec construction question{e}")

@@ -12,7 +12,8 @@ class SQLiteHandler:
     def creation_historique(self):
         with self.conn:
             self.conn.execute('''CREATE TABLE IF NOT EXISTS transactions (
-                                 telephone TEXT,
+                                 utilisateur TEXT,
+                                 salon TEXT,
                                  transaction_id INTEGER PRIMARY KEY,
                                  date_question TEXT,
                                  question TEXT,
@@ -27,7 +28,7 @@ class SQLiteHandler:
     def creation_contexte(self):
         with self.conn:
             self.conn.execute('''CREATE TABLE IF NOT EXISTS contexte (
-                                 telephone TEXT PRIMARY KEY,
+                                 utilisateur TEXT PRIMARY KEY,
                                  contexte TEXT)''')
 
 
@@ -35,39 +36,39 @@ class SQLiteHandler:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute('DROP TABLE IF EXISTS contexte')
 
-    def ajout_transaction(self, telephone, date_question, question, date_reponse, reponse):
+    def ajout_transaction(self, utilisateur, salon, date_question, question, date_reponse, reponse):
         with self.conn:
             date_question = datetime.now().isoformat()
-            self.conn.execute('INSERT INTO transactions (telephone, date_question, question, date_reponse, reponse) VALUES (?, ?, ?, ?, ?)',
-                              (telephone, date_question, question, date_reponse, reponse, )) 
+            self.conn.execute('INSERT INTO transactions (utilisateur, salon, date_question, question, date_reponse, reponse) VALUES (?, ?, ?, ?, ?, ?)',
+                              (utilisateur, salon, date_question, question, date_reponse, reponse, )) 
             
 
-    def ajout_question(self, telephone, question):
+    def ajout_question(self, utilisateur, salon, question):
         with self.conn:
             date_question = datetime.now().isoformat()
-            ret = self.conn.execute('INSERT INTO transactions (telephone, date_question, question) VALUES (?, ?, ?)',
-                              (telephone, date_question, question))
+            ret = self.conn.execute('INSERT INTO transactions (utilisateur, salon, date_question, question) VALUES (?, ?, ?, ?)',
+                              (utilisateur, salon, date_question, question))
             return ret
 
-    def modification_reponse(self, telephone, transaction_id, reponse):
+    def modification_reponse(self, utilisateur, salon, transaction_id, reponse):
         with self.conn:
             date_reponse = datetime.now().isoformat()
             if reponse == None:
                 reponse = "" 
-            ret = self.conn.execute('UPDATE transactions SET date_reponse = ?, reponse = ? WHERE telephone = ? AND transaction_id = ?',
-                              (date_reponse, reponse, telephone, transaction_id,))
+            ret = self.conn.execute('UPDATE transactions SET date_reponse = ?, reponse = ? WHERE utilisateur = ? AND salon = ? AND transaction_id = ?',
+                              (date_reponse, reponse, utilisateur, salon, transaction_id,))
             return ret
 
-    def remove_transaction(self, telephone, transaction_id):
+    def remove_transaction(self, utilisateur, salon, transaction_id):
         with self.conn:
-            ret = self.conn.execute('DELETE FROM transactions WHERE telephone = ? AND transaction_id = ?',
-                              (telephone, transaction_id,))
+            ret = self.conn.execute('DELETE FROM transactions WHERE utilisateur = ? AND salon = ? AND transaction_id = ?',
+                              (utilisateur, salon, transaction_id,))
             return ret
         
-    def remove_transaction(self, telephone):
+    def remove_transaction(self, utilisateur, salon):
         with self.conn:
-            ret = self.conn.execute('DELETE FROM transactions WHERE telephone = ?',
-                              (telephone, ))
+            ret = self.conn.execute('DELETE FROM transactions WHERE utilisateur = ? AND salon = ?',
+                              (utilisateur, salon, ))
             return ret
 
     
@@ -77,17 +78,17 @@ class SQLiteHandler:
             return ret
 
 
-    def modification_contexte(self, telephone, contexte):
+    def modification_contexte(self, utilisateur, contexte):
         with self.conn:
             contexte_json = json.dumps(contexte)
-            ret = self.conn.execute('INSERT OR REPLACE INTO contexte (telephone, contexte) VALUES (?, ?)',
-                              (telephone, contexte_json))
+            ret = self.conn.execute('INSERT OR REPLACE INTO contexte (utilisateur, contexte) VALUES (?, ?)',
+                              (utilisateur, contexte_json))
             self.conn.commit()
             return ret
             
-    def historique(self, telephone, n):
+    def historique(self, utilisateur, salon, n):
         with self.conn:
-            cursor = self.conn.execute('''SELECT * FROM transactions WHERE telephone = ? ORDER BY transaction_id  DESC LIMIT ?''', (telephone, n,))
+            cursor = self.conn.execute('''SELECT * FROM transactions WHERE utilisateur = ? AND salon = ? ORDER BY transaction_id  DESC LIMIT ?''', (utilisateur, salon, n,))
             transactions = cursor.fetchall()
             
             # Convertir les transactions en une liste de dictionnaires pour une meilleure lisibilité

@@ -3,31 +3,42 @@ from amicus_bot.interfaces import IObserver, IObservable, IPlugin
 from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 from amicus_bot.callbacks import Callbacks
+from sqlite_handler import SQLiteHandler
+from interrogationMixtralAnyscale import InterrogationMixtral
 
+
+sqliteh = SQLiteHandler(db_path="./test_context.sqlite")
+im = InterrogationMixtral(db_path="./test_context.sqlite")
 
 logger = logging.getLogger(__name__)
-
-class Echo(IObserver):
-    def __init__(self,observable:Callbacks=None):
-        self.observable =observable
-
-    async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
-        logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")
-        await self.observable.notify(room, event, f"L'utilisateur {event.sender} a écrit {msg} depuis le salon {room.name}")
-
-    def prefix(self):
-        return "!echo"
-
-    
 
     
 class Perroquet(IObserver):
     def __init__(self,observable:Callbacks=None):
         self.observable =observable
 
+    def pour_Mixtral(self,utilisateur:str,salon:str,question:str):
+        print(f"Question de {utilisateur} du salon {salon}: {question}")
+        transaction_id = im.sqliteh.ajout_question(utilisateur, salon,question).lastrowid
+        print(f"L'id de la transaction pour la question {question} est {transaction_id}")
+            
+        reponse = ""
+        try:
+            reponse = im.interroge_mixtral(utilisateur, salon,question);
+            print(f"Réponse de Mixtral \"{reponse}\"")
+            r = reponse.json()["choices"][0]["message"]["content"]
+            print(f"Voici la réponse: {r}")
+            #self.iv.sqliteh.modification_reponse(numero, transaction_id,r)
+        except BaseException as e:
+            print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")
+            im.sqliteh.remove_transaction(transaction_id)
+            reponse = None
+        return reponse
+
     async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
         logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")
-        await self.observable.notify(room, event, f"L'utilisateur {event.sender} a écrit \"{msg}\" depuis le salon {room.name}")
+        reponse = self.pour_Mixtral(event.sender,room.display_name)
+        await self.observable.notify(room, event, reponse)
 
     def prefix(self):
         return "!coco"

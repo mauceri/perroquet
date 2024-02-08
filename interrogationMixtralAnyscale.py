@@ -1,14 +1,8 @@
 import logging
-from typing import Dict, List, Union
-from collections import deque
-from anyio import sleep
 import requests
-import sys
 import json
 from datetime import datetime
 from sqlite_handler import SQLiteHandler
-from transformers import AutoTokenizer
-#from dotenv import load_dotenv
 import os
 
 
@@ -19,9 +13,9 @@ class InterrogationMixtral:
                  profondeur_historique:int=6,
                  url:str="https://api.endpoints.anyscale.com/v1",
                  model_name = "mistralai/Mixtral-8x7B-Instruct-v0.1",
-                 instructions_initiales:Dict[str,str]={"role":"system",
+                 instructions_initiales:dict[str,str]={"role":"system",
                                                        "content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
-                 tokenizer = AutoTokenizer.from_pretrained("bofenghuang/vigostral-7b-chat")                                    
+                 
                 ):
         #self.numero = "+33659745825"
         self.load_env_variables('.localenv')
@@ -34,7 +28,6 @@ class InterrogationMixtral:
         self.model_name = model_name
         self.instructions_initiales = instructions_initiales
         self.contexte = []
-        self.tokenizer = tokenizer
         #self.sqliteh.remove_all_transactions()
         #self.construction_contexte_initial()
         self.headers = {

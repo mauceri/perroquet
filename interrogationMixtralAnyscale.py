@@ -86,7 +86,7 @@ class InterrogationMixtral:
             "temperature": 0.7
         }
         print(f"data : {data}")
-        
+    
         try:
             reponse = requests.post(f"{self.url}/chat/completions",headers=self.headers, data=json.dumps(data))
             return reponse;

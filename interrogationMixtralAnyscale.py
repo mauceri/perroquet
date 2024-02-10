@@ -17,8 +17,9 @@ class InterrogationMixtral:
                  
                 ):
        
-        self.load_env_variables('.localenv')
+        #self.load_env_variables('.localenv')
         #load_dotenv('.localenv')
+        self.api_key = os.getenv('ANY_SCALE_API_KEY')
         self.db_path = db_path
         self.sqliteh = SQLiteHandler(self.db_path)
         self.profondeur_historique = profondeur_historique

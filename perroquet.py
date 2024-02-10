@@ -31,7 +31,7 @@ class Perroquet(IObserver):
             self.iv.sqliteh.modification_reponse(utilisateur, salon, transaction_id,reponse)
         except BaseException as e:
             print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")
-            im.sqliteh.remove_transaction(transaction_id)
+            im.sqliteh.remove_transaction(utilisateur, salon,transaction_id)
             reponse = None
         return reponse
 

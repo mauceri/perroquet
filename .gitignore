@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 .env
 .localenv
-plugins_env
+plugins_env/
+*.sqlite
 
 # Distribution / packaging
 build/

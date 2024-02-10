@@ -20,38 +20,24 @@ def read_file(path_segments):
         return f.read()
 
 
-version = exec_file(("./", "__init__.py"))["__version__"]
 long_description = read_file(("README.md",))
 
 
 setup(
     name="perroquet",
-    version=version,
+    version='0.1.0',
     url="https://github.com/mauceri/perroquet",
     description="Un robot qui vous veut du bien",
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages(),
     install_requires=[
         "amicus_interfaces",
         "requests>=2.31.0",
     ],
-    extras_require={
-        "dev": [
-            "isort==5.0.4",
-            "flake8==3.8.3",
-            "flake8-comprehensions==3.2.3",
-            "black==19.10b0",
-        ],
-    },
     classifiers=[
-        "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
     ],
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    # Allow the user to run the bot with `amicus_bot ...`
-    #scripts=["perroquet"],
+
+
 )

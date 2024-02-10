@@ -13,8 +13,7 @@ class InterrogationMixtral:
                  profondeur_historique:int=6,
                  url:str="https://api.endpoints.anyscale.com/v1",
                  model_name = "mistralai/Mixtral-8x7B-Instruct-v0.1",
-                 instructions_initiales:dict[str,str]={"role":"system",
-                                                       "content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
+                 instructions_initiales={"role":"system","content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
                  
                 ):
        

@@ -1,5 +1,5 @@
 import logging
-from amicus_bot.interfaces import IObserver, IObservable, IPlugin
+from amicus_interfaces import IObserver, IObservable, IPlugin
 from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 from amicus_bot.callbacks import Callbacks

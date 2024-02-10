@@ -65,11 +65,11 @@ class SQLiteHandler:
                               (utilisateur, salon, transaction_id,))
             return ret
         
-    def remove_transaction(self, utilisateur, salon):
-        with self.conn:
-            ret = self.conn.execute('DELETE FROM transactions WHERE utilisateur = ? AND salon = ?',
-                              (utilisateur, salon, ))
-            return ret
+    # def remove_transaction(self, utilisateur, salon):
+    #     with self.conn:
+    #         ret = self.conn.execute('DELETE FROM transactions WHERE utilisateur = ? AND salon = ?',
+    #                           (utilisateur, salon, ))
+    #         return ret
 
     
     def remove_all_transactions(self):

@@ -37,8 +37,8 @@ class Perroquet(IObserver):
 
     async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
         logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")
-        reponse = self.pour_Mixtral(event.sender,room.display_name,"Coco a dit : "+msg)
-        await self.observable.notify(room, event, reponse)
+        reponse = self.pour_Mixtral(event.sender,room.display_name,msg)
+        await self.observable.notify(room, event, "Coco a dit : "+reponse)
 
     def prefix(self):
         return "!coco"

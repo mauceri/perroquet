@@ -4,7 +4,7 @@ import sys
 from interrogationMixtralAnyscale import InterrogationMixtral
 from sqlite_handler import SQLiteHandler
 
-sqliteh = SQLiteHandler(db_path="./test_context.sqlite")
+sqliteh = SQLiteHandler(db_path="./perroquet_db/test_context.sqlite")
 im = InterrogationMixtral(db_path=sqliteh.db_path)
 
 

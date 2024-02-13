@@ -7,7 +7,7 @@ from sqlite_handler import SQLiteHandler
 from interrogationMixtralAnyscale import InterrogationMixtral
 
 
-sqliteh = SQLiteHandler(db_path="/data/test_context.sqlite")
+sqliteh = SQLiteHandler(db_path="/data/perroquet/test_context.sqlite")
 im = InterrogationMixtral(sqliteh.db_path)
 
 logger = logging.getLogger(__name__)

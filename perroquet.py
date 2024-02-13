@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
     
 class Perroquet(IObserver):
-    def __init__(self,observable:Callbacks=None):
-        self.observable =observable
+    def __init__(self,observable:IObservable=None):
+        self.__observable = observable
 
     def pour_Mixtral(self,utilisateur:str,salon:str,question:str):
         print(f"Question de {utilisateur} du salon {salon}: {question}")
@@ -38,20 +38,20 @@ class Perroquet(IObserver):
     async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
         logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")
         reponse = self.pour_Mixtral(event.sender,room.display_name,msg)
-        await self.observable.notify(room, event, "Coco a dit : "+reponse)
+        await self.__observable.notify(room, event, "Coco a dit : "+reponse)
 
     def prefix(self):
         return "!coco"
     
 class Plugin(IPlugin):
     def __init__(self,observable:IObservable):
-        self.observable = observable
-        self.perroquet = Perroquet(observable)
+        self.__observable = observable
+        self.perroquet = Perroquet(self.__observable)
         logger.info(f"********************** Observateur créé {self.perroquet.prefix()}")
         
     def start(self):
         logger.info(f"********************** Inscripton de {self.perroquet.prefix()}")
-        self.observable.subscribe(self.perroquet)
+        self.__observable.subscribe(self.perroquet)
 
     async def stop(self):
         pass

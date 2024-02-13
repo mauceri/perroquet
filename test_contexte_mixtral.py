@@ -5,7 +5,7 @@ from interrogationMixtralAnyscale import InterrogationMixtral
 from sqlite_handler import SQLiteHandler
 
 sqliteh = SQLiteHandler(db_path="./test_context.sqlite")
-im = InterrogationMixtral(db_path="./test_context.sqlite")
+im = InterrogationMixtral(db_path=sqliteh.db_path)
 
 
 def pour_Mixtral(utilisateur:str,salon:str,question:str):

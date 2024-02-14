@@ -54,4 +54,4 @@ class Plugin(IPlugin):
         self.__observable.subscribe(self.perroquet)
 
     async def stop(self):
-        pass
+        self.__observable.unsubscribe(self.perroquet)

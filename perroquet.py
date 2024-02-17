@@ -4,7 +4,7 @@ from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
 from amicus_bot.callbacks import Callbacks
 from .sqlite_handler import SQLiteHandler
-from interrogationMixtralAnyscale import InterrogationMixtral
+from .interrogationMixtralAnyscale import InterrogationMixtral
 
 
 sqliteh = SQLiteHandler(db_path="/data/perroquet/test_context.sqlite")

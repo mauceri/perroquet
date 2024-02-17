@@ -2,7 +2,7 @@ import logging
 import requests
 import json
 from datetime import datetime
-from sqlite_handler import SQLiteHandler
+from .sqlite_handler import SQLiteHandler
 import os
 
 

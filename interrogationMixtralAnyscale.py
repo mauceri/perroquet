@@ -2,7 +2,7 @@ import logging
 import requests
 import json
 from datetime import datetime
-from sqlite_handler import SQLiteHandler
+from .sqlite_handler import SQLiteHandler
 import os
 import openai
 
@@ -26,7 +26,7 @@ class InterrogationMixtral:
             api_key = self.api_key,
         )
 
-        print(f"************{os.getenv('URLU')}")
+        print(f"************{self.api_key}")
         #self.load_env_variables('.localenv')
         #load_dotenv('.localenv')
         self.api_key = os.getenv('ANY_SCALE_API_KEY')

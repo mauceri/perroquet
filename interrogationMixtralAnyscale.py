@@ -2,8 +2,10 @@ import logging
 import requests
 import json
 from datetime import datetime
-from .sqlite_handler import SQLiteHandler
+from sqlite_handler import SQLiteHandler
 import os
+import openai
+
 
 
 
@@ -13,27 +15,33 @@ class InterrogationMixtral:
                  profondeur_historique:int=6,
                  url:str="https://api.endpoints.anyscale.com/v1",
                  model_name = "mistralai/Mixtral-8x7B-Instruct-v0.1",
+                 
                  instructions_initiales={"role":"system","content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
                  
                 ):
-       
+        self.client = openai.OpenAI(
+            base_url = "https://api.endpoints.anyscale.com/v1",
+            api_key = "esecret_xa4u81rr938asp8am9j6a2t1gb"
+        )
+
+        print(f"************{os.getenv('URLU')}")
         #self.load_env_variables('.localenv')
         #load_dotenv('.localenv')
         self.api_key = os.getenv('ANY_SCALE_API_KEY')
+        #self.api_key = os.getenv('URLU')
         self.db_path = db_path
         self.sqliteh = SQLiteHandler(self.db_path)
         self.profondeur_historique = profondeur_historique
         self.url = url
-        self.api_key = os.getenv('ANY_SCALE_API_KEY')
         self.model_name = model_name
         self.instructions_initiales = instructions_initiales
         self.contexte = []
         #self.sqliteh.remove_all_transactions()
         #self.construction_contexte_initial()
-        self.headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.api_key
-        }
+        #self.headers = {
+        #    "Content-Type": "application/json",
+        #    "Authorization": "Bearer " + self.api_key
+        #}
         
 
     def load_env_variables(self,file_path):
@@ -65,7 +73,7 @@ class InterrogationMixtral:
             contexte.append({"role":"user","content":transaction['question']})
             if transaction['reponse'] != None:
                 contexte.append({"role":"assistant","content":transaction['reponse']})
-        print(f"Question formatée {json.dumps(contexte)}")
+        #print(f"Question formatée {json.dumps(contexte)}")
         #return json.dumps(contexte)
         return contexte
             
@@ -80,16 +88,22 @@ class InterrogationMixtral:
             print(f"Échec construction question{e}")
             logging.info(f"Échec construction question{e}")
             return None
-        data = {
-            "model": self.model_name,
-            "messages": qf,
-            "temperature": 0.7
-        }
-        print(f"data : {data}")
+        #data = {
+        #    "model": self.model_name,
+        #    "messages": qf,
+        #    "temperature": 0.7
+        #}
+        #print(f"data : {data}")
     
         try:
-            reponse = requests.post(f"{self.url}/chat/completions",headers=self.headers, data=json.dumps(data))
-            return reponse;
+            chat_completion = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=qf,
+                temperature=0.7
+                )
+            return chat_completion
+#            #reponse = requests.post(f"{self.url}/chat/completions",headers=self.headers, data=json.dumps(data))
+#            #return reponse
         except BaseException as e:
             print(f"Echec interrogation Mixtral {e}")
         return None

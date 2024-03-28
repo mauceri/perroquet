@@ -15,10 +15,8 @@ def pour_Mixtral(utilisateur:str,salon:str,question:str):
             
     try:
         reponse = im.interroge_mixtral(utilisateur, salon,question);
-        print(f"Réponse de Mixtral \"{reponse}\"")
-        r = reponse.json()["choices"][0]["message"]["content"]
+        r = reponse.choices[0].message.content
         print(f"Voici la réponse: {r}")
-        #self.iv.sqliteh.modification_reponse(numero, transaction_id,r)
     except BaseException as e:
         print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")
         im.sqliteh.remove_transaction(transaction_id)
@@ -32,8 +30,6 @@ def allonzy(lignes:List[str]):
         salon = ligne[1]
         message = ' '.join(l[2:])
         pour_Mixtral(utilisateur, salon, message)
-
-            
 
 if __name__ == "__main__":
     lignes = [line.strip() for line in sys.stdin]

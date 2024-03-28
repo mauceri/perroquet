@@ -25,9 +25,9 @@ class Perroquet(IObserver):
         reponse = ""
         try:
             reponse = im.interroge_mixtral(utilisateur, salon,question);
-            print(f"Réponse de Mixtral \"{reponse}\"")
-            reponse = reponse.json()["choices"][0]["message"]["content"]
-            print(f"Voici la réponse: {reponse}")
+            logger.info(f"Réponse de Mixtral \"{reponse}\"")
+            reponse = reponse.choices[0].message.content
+            logger.info(f"Voici la réponse: {reponse}")
             im.sqliteh.modification_reponse(utilisateur, salon, transaction_id,reponse)
         except BaseException as e:
             print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")

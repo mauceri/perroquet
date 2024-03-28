@@ -2,7 +2,7 @@ import logging
 import requests
 import json
 from datetime import datetime
-from .sqlite_handler import SQLiteHandler
+from sqlite_handler import SQLiteHandler
 import os
 import openai
 
@@ -19,9 +19,11 @@ class InterrogationMixtral:
                  instructions_initiales={"role":"system","content":"Vous êtes un robot de discussion générale. Vos réponses sont concises, elles ne dépassent pas 500 mots, mais restent informatives."},
                  
                 ):
+        
+        self.api_key = os.getenv('ANY_SCALE_API_KEY')
         self.client = openai.OpenAI(
             base_url = "https://api.endpoints.anyscale.com/v1",
-            api_key = "esecret_xa4u81rr938asp8am9j6a2t1gb"
+            api_key = self.api_key,
         )
 
         print(f"************{os.getenv('URLU')}")

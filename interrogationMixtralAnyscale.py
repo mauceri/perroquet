@@ -6,9 +6,6 @@ from .sqlite_handler import SQLiteHandler
 import os
 import openai
 
-
-
-
 class InterrogationMixtral:
     def __init__(self,
                  db_path:str='interrogation_mixtral.sqlite',
@@ -26,7 +23,7 @@ class InterrogationMixtral:
             api_key = self.api_key,
         )
 
-        print(f"************{self.api_key}")
+        logging.info(f"************ ANY_SCALE_API_KEY={self.api_key}")
         #self.load_env_variables('.localenv')
         #load_dotenv('.localenv')
         self.api_key = os.getenv('ANY_SCALE_API_KEY')

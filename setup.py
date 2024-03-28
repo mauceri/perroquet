@@ -32,6 +32,7 @@ setup(
     install_requires=[
         "amicus_interfaces>=0.1.2",
         "requests>=2.31.0",
+        "openai",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,4 +1,5 @@
 import logging
+import os
 from amicus_interfaces import IObserver, IObservable, IPlugin
 from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
@@ -37,7 +38,7 @@ class Perroquet(IObserver):
 
     async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
         logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")
-        logging.info(f"************ ANY_SCALE_API_KEY={self.api_key}")
+        logging.info(f"************ ANY_SCALE_API_KEY={os.getenv('ANY_SCALE_API_KEY')}")
         reponse = self.pour_Mixtral(event.sender,room.display_name,msg)
         if reponse == None:
             reponse = "Une erreur s'est produite lors de l'interrogation de Mixtral"

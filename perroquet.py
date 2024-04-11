@@ -3,7 +3,6 @@ import os
 from amicus_interfaces import IObserver, IObservable, IPlugin
 from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
-from amicus_bot.callbacks import Callbacks
 from .sqlite_handler import SQLiteHandler
 from .interrogationMixtralAnyscale import InterrogationMixtral
 
@@ -48,14 +47,15 @@ class Perroquet(IObserver):
         return "!coco"
     
 class Plugin(IPlugin):
-    def __init__(self,observable:IObservable):
-        self.__observable = observable
-        self.perroquet = Perroquet(self.__observable)
+    def __init__(self,observable:IObservable,path:str):
+        super().__init__(observable,path)
+        self.observable = observable
+        self.perroquet = Perroquet(self.observable)
         logger.info(f"********************** Observateur créé {self.perroquet.prefix()}")
         
     def start(self):
         logger.info(f"********************** Inscripton de {self.perroquet.prefix()}")
-        self.__observable.subscribe(self.perroquet)
+        self.observable.subscribe(self.perroquet)
 
     async def stop(self):
-        self.__observable.unsubscribe(self.perroquet)
+        self.observable.unsubscribe(self.perroquet)

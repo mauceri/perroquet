@@ -7,31 +7,31 @@ from .sqlite_handler import SQLiteHandler
 from .interrogationMixtralAnyscale import InterrogationMixtral
 
 
-sqliteh = SQLiteHandler(db_path="/data/perroquet/test_context.sqlite")
-im = InterrogationMixtral(sqliteh.db_path)
 
 logger = logging.getLogger(__name__)
 
     
 class Perroquet(IObserver):
-    def __init__(self,observable:IObservable=None):
+    def __init__(self,observable:IObservable=None,db_path:str=None):
         self.__observable = observable
+        self.sqliteh = SQLiteHandler(db_path=os.path.join(db_path,"test_context.sqlite"))
+        self.im = InterrogationMixtral(self.sqliteh.db_path)
 
     def pour_Mixtral(self,utilisateur:str,salon:str,question:str):
         print(f"Question de {utilisateur} du salon {salon}: {question}")
-        transaction_id = im.sqliteh.ajout_question(utilisateur, salon,question).lastrowid
+        transaction_id = self.im.sqliteh.ajout_question(utilisateur, salon,question).lastrowid
         print(f"L'id de la transaction pour la question {question} est {transaction_id}")
             
         reponse = ""
         try:
-            reponse = im.interroge_mixtral(utilisateur, salon,question);
+            reponse = self.im.interroge_mixtral(utilisateur, salon,question);
             logger.info(f"Réponse de Mixtral \"{reponse}\"")
             reponse = reponse.choices[0].message.content
             logger.info(f"Voici la réponse: {reponse}")
-            im.sqliteh.modification_reponse(utilisateur, salon, transaction_id,reponse)
+            self.im.sqliteh.modification_reponse(utilisateur, salon, transaction_id,reponse)
         except BaseException as e:
             print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation de Mixtral {e}")
-            im.sqliteh.remove_transaction(utilisateur, salon,transaction_id)
+            self.im.sqliteh.remove_transaction(utilisateur, salon,transaction_id)
             reponse = None
         return reponse
 
@@ -50,7 +50,7 @@ class Plugin(IPlugin):
     def __init__(self,observable:IObservable,path:str):
         super().__init__(observable,path)
         self.observable = observable
-        self.perroquet = Perroquet(self.observable)
+        self.perroquet = Perroquet(self.observable,path)
         logger.info(f"********************** Observateur créé {self.perroquet.prefix()}")
         
     def start(self):

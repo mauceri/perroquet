@@ -43,7 +43,10 @@ class InterrogationLocale:
 
     def historique_et_question_formatés(self, utilisateur: str = "kiki", salon: str = "caramba"):
         contexte = [self.instructions_initiales]
+
+        print(f"°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°° profondeur {self.profondeur_historique}")
         h = self.sqliteh.historique(utilisateur, salon, self.profondeur_historique)
+        print(f"°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°° res h {h}")
         for transaction in h:
             contexte.append({"role": "user", "content": transaction['question']})
             if transaction['reponse'] is not None:

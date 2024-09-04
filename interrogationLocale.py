@@ -66,6 +66,8 @@ class InterrogationLocale:
 #            "Authorization": f"Bearer {self.api_key}"  # Utilisation de la clé API si nécessaire
         }
         
+        print(f"°°°°°°°°°°°°°°°°°°°°°°°°°°°°°° qf = {qf}")
+
         # Préparation des données pour l'appel à la nouvelle API
         data = {
             "model": self.model_name,
@@ -81,8 +83,8 @@ class InterrogationLocale:
             if response.status_code == 200:
                 return response.json()  # Retourne la réponse formatée JSON
             else:
-                print(f"Échec interrogation Mixtral : {response.status_code}, {response.text}")
-                logging.info(f"Échec interrogation Mixtral : {response.status_code}, {response.text}")
+                print(f"Échec interrogation locale : {response.status_code}, {response.text}")
+                logging.info(f"Échec interrogation locale : {response.status_code}, {response.text}")
                 return None
         except BaseException as e:
             print(f"Échec interrogation Mixtral {e}")

@@ -27,7 +27,8 @@ class Perroquet(IObserver):
         try:
             reponse = il.interroge_llm(utilisateur, salon,question);
             logger.info(f"Réponse du LLM \"{reponse}\"")
-            reponse = reponse.choices[0].message.content
+            #reponse = reponse.choices[0].message.content
+            reponse = reponse['choices'][0]['message']['content']
             logger.info(f"Voici la réponse: {reponse}")
             il.sqliteh.modification_reponse(utilisateur, salon, transaction_id,reponse)
         except BaseException as e:

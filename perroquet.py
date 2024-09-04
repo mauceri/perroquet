@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from amicus_interfaces import IObserver, IObservable, IPlugin
 from nio.rooms import MatrixRoom
 from nio.events.room_events import RoomMessageText
@@ -25,6 +26,7 @@ class Perroquet(IObserver):
             
         reponse = ""
         try:
+            stime = time.time()
             reponse = il.interroge_llm(utilisateur, salon,question);
             logger.info(f"Réponse du LLM \"{reponse}\"")
             #reponse = reponse.choices[0].message.content
@@ -35,7 +37,8 @@ class Perroquet(IObserver):
             print(f"Quelque chose n'a pas fonctionné au niveau de l'interrogation du LLM {e}")
             il.sqliteh.remove_transaction(utilisateur, salon,transaction_id)
             reponse = None
-        return reponse
+        reponset = f"{time.time()-stime} {reponse}"
+        return reponset
 
     async def notify(self,room:MatrixRoom, event:RoomMessageText, msg:str):
         logger.info(f"***************************** L'utilisateur {event.sender} a écrit {msg} depuis ls salon {room.name}")

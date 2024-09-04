@@ -52,7 +52,7 @@ class InterrogationLocale:
 
     def interroge_llm(self, utilisateur, salon, question):
         print(f"Interroge {self.model_name} {question}")
-        logging.info(f"Interroge {self.model_name} {question}")
+        logging.info(f"L'utilisateur {utilisateur} pose à {self.model_name} la question {question}")
         try:
             qf = self.historique_et_question_formatés(utilisateur, salon)
         except BaseException as e:

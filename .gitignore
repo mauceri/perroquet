@@ -6,6 +6,7 @@ __pycache__/
 .localenv
 plugins_env/
 *.sqlite
+.vscode
 
 # Distribution / packaging
 build/
